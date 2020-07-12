@@ -19,8 +19,7 @@
     </Transition>
 
     <ConstraintSet
-        android:id="@+id/constraintset_one"
-        motion:deriveConstraintsFrom="@+id/constraintset_one_default"/>
+        android:id="@+id/constraintset_one"/>
 
     __merge__(_merge_src_example_constraintset)
 

@@ -102,13 +102,13 @@ GENERATED_FILE_EXPECTED_PATH = os.path.join(
 
 
 class MergeTestCase(TestCase):
-    # def setUp(self) -> None:
-    #     if os.path.exists(GENERATED_FILE_EXPECTED_PATH):
-    #         os.remove(GENERATED_FILE_EXPECTED_PATH)
-    #
-    # def tearDown(self) -> None:
-    #     if os.path.exists(GENERATED_FILE_EXPECTED_PATH):
-    #         os.remove(GENERATED_FILE_EXPECTED_PATH)
+    def setUp(self) -> None:
+        if os.path.exists(GENERATED_FILE_EXPECTED_PATH):
+            os.remove(GENERATED_FILE_EXPECTED_PATH)
+
+    def tearDown(self) -> None:
+        if os.path.exists(GENERATED_FILE_EXPECTED_PATH):
+            os.remove(GENERATED_FILE_EXPECTED_PATH)
 
     def test_merge_tag_regex(self):
         results = _find_merge_tags(MOTION_SCENE)
@@ -155,7 +155,7 @@ class MergeTestCase(TestCase):
         )
 
     def test_complete(self):
-        # self.assertFalse(os.path.exists(GENERATED_FILE_EXPECTED_PATH))
+        self.assertFalse(os.path.exists(GENERATED_FILE_EXPECTED_PATH))
 
         _merge_sources_for_directory(EXAMPLE_ROOT_DIR)
 

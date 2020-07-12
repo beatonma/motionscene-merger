@@ -95,6 +95,9 @@ class MotionSceneSrc:
         with open(target, 'w') as f:
             f.write(composed_text)
 
+    def __str__(self):
+        return f'{os.path.basename(self.filepath)}'
+
 
 def _find_merge_tags(src_text: str) -> List[MergeTag]:
     matches = MERGE_TAG_PATTERN.findall(src_text)
@@ -106,7 +109,9 @@ def _find_merge_tags(src_text: str) -> List[MergeTag]:
 
 def _get_xml_resource_filenames(rootdir: str) -> List[str]:
     glb = f'{rootdir}/**/resources/xml/{FILE_PREFIX}*.xml'.replace('//', '/')
-    return glob.glob(glb)
+    result = glob.glob(glb, recursive=True)
+    log.info(f'Found {len(result)} files in xml resource directory...')
+    return result
 
 
 def _get_motionscene_files(xml_files: List[str]) -> List[MotionSceneSrc]:
@@ -116,6 +121,7 @@ def _get_motionscene_files(xml_files: List[str]) -> List[MotionSceneSrc]:
             src_text = f.read()
             if MOTION_SCENE_PATTERN.match(src_text) is not None:
                 results.append(MotionSceneSrc(filename))
+    log.info(f'Found {len(results)} MotionScene files...')
 
     return results
 
@@ -130,6 +136,7 @@ def _merge_sources(xml_files: List[str]):
 
     for m in motionscene_files:
         merge_tags = _find_merge_tags(m.src_text)
+        log.info(f'Found {len(merge_tags)} {MERGE_TAG} tags in {m}...')
         for tag in merge_tags:
             tag.resolve_content(xml_files)
             m.inject(tag)

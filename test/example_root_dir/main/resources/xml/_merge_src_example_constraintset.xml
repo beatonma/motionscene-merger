@@ -1,4 +1,3 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ConstraintSet
-    android:id="@+id/constraintset_two"
-    motion:deriveConstraintsFrom="@+id/constraintset_two_default"/>
+    android:id="@+id/constraintset_two"/>
