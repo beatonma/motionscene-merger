@@ -22,12 +22,10 @@ log.setLevel(logging.INFO)
 log.addHandler(logging.StreamHandler())
 
 
-FILE_PREFIX = '_merge_src_'
+MERGE_FILE_PREFIX = '_merge_src_'
 MERGE_TAG = '__merge__'
 MERGE_TAG_PATTERN = re.compile(rf'^([ ]*){MERGE_TAG}\((.*?)\)', flags=re.DOTALL | re.MULTILINE)
-MOTION_SCENE_PATTERN = re.compile(r'.*?<MotionScene.*?>.*?__merge__.*?</MotionScene>', flags=re.DOTALL)
-CONSTRAINT_SET_PATTERN = re.compile(r'<ConstraintSet.*?>.*?</ConstraintSet>', flags=re.DOTALL)
-CONSTRAINT_SET_START_PATTERN = re.compile(r'[ ]*<ConstraintSet.*')
+MOTION_SCENE_PATTERN = re.compile(r'.*?<MotionScene.*?>(.*?)</MotionScene>.*', flags=re.DOTALL)
 XML_FILE_HEADER = '<?xml version="1.0" encoding="utf-8"?>'
 INJECTION_MESSAGE_START = '<!-- Start injected content from \'{filename}\' -->\n'
 INJECTION_MESSAGE_END = '<!-- End injected content from \'{filename}\' -->\n'
@@ -58,11 +56,32 @@ class MergeTag:
         self.source_content = ''
         self._add_content_line(INJECTION_MESSAGE_START.format(filename=self.filename))
         with open(source_file, 'r') as f:
-            for line in f.readlines():
-                if XML_FILE_HEADER in line:
-                    continue
-                self._add_content_line(line)
+            consumed = self._get_motionscene_content(f)
+
+            if not consumed:
+                self._get_generic_content(f)
+
         self._add_content_line(INJECTION_MESSAGE_END.format(filename=self.filename))
+
+    def _get_motionscene_content(self, file) -> bool:
+        """
+        Add any content that lies within <MotionScene></MotionScene> tags.
+        Return True if we found a MotionScene, else False.
+        """
+        file.seek(0)
+        content = file.read()
+        match = MOTION_SCENE_PATTERN.match(content)
+        if match:
+            self.source_content = self.source_content + match.group(1)
+            return True
+        return False
+
+    def _get_generic_content(self, file):
+        file.seek(0)
+        for line in file.readlines():
+            if XML_FILE_HEADER in line:
+                continue
+            self._add_content_line(line)
 
     def _add_content_line(self, content):
         indent = ' ' * self.indent
@@ -79,7 +98,7 @@ class MotionSceneSrc:
         dirname = os.path.dirname(self.filepath)
         fname = os.path.basename(self.filepath)
 
-        fname = fname.replace(FILE_PREFIX, '')
+        fname = fname.replace(MERGE_FILE_PREFIX, '')
         target_filepath = os.path.join(dirname, fname)
         assert(target_filepath != self.filepath)
         return target_filepath
@@ -108,7 +127,7 @@ def _find_merge_tags(src_text: str) -> List[MergeTag]:
 
 
 def _get_xml_resource_filenames(rootdir: str) -> List[str]:
-    glb = f'{rootdir}/**/resources/xml/{FILE_PREFIX}*.xml'.replace('//', '/')
+    glb = f'{rootdir}/**/resources/xml/{MERGE_FILE_PREFIX}*.xml'.replace('//', '/')
     result = glob.glob(glb, recursive=True)
     log.info(f'Found {len(result)} files in xml resource directory...')
     return result

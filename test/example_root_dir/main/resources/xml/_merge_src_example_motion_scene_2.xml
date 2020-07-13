@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MotionScene
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:motion="http://schemas.android.com/apk/res-auto">
+
+    __merge__(_merge_src_example_motion_scene_3)
+
+</MotionScene>
