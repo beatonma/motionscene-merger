@@ -95,7 +95,7 @@ EXAMPLE_ROOT_DIR = os.path.join(os.path.dirname(__file__), 'example_root_dir')
 
 TEST_XML_DIR = os.path.join(
     EXAMPLE_ROOT_DIR,
-    _join_dirs('main/resources/xml/')
+    _join_dirs('main/res/xml/')
 )
 
 
@@ -161,7 +161,7 @@ class MergeTestCase(TestCase):
 
         self.assertEqual(
             motionscene_files[0].get_target_file(),
-            os.path.join(os.path.join(root, _join_dirs('main/resources/xml')), 'example_motion_scene.xml')
+            _get_xml_path('example_motion_scene.xml')
         )
 
     def test_complete(self):

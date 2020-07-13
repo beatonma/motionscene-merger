@@ -29,6 +29,13 @@ MOTION_SCENE_PATTERN = re.compile(r'.*?<MotionScene.*?>(.*?)</MotionScene>.*', f
 XML_FILE_HEADER = '<?xml version="1.0" encoding="utf-8"?>'
 INJECTION_MESSAGE_START = '<!-- Start injected content from \'{filename}\' -->\n'
 INJECTION_MESSAGE_END = '<!-- End injected content from \'{filename}\' -->\n'
+IGNORED_LINES = [
+    '<?xml version="1.0" encoding="utf-8"?>',
+    'xmlns:android="http://schemas.android.com/apk/res/android"',
+    'xmlns:app="http://schemas.android.com/apk/res-auto"',
+    'xmlns:motion="http://schemas.android.com/apk/res-auto"',
+    'xmlns:tools="http://schemas.android.com/tools"',
+]
 
 
 class MergeTag:
@@ -54,7 +61,7 @@ class MergeTag:
             raise Exception(f'File not found for filename=\'{self.filename}\' {xml_files}')
 
         self.source_content = ''
-        self._add_content_line(INJECTION_MESSAGE_START.format(filename=self.filename))
+        self._add_content_line(INJECTION_MESSAGE_START.format(filename=self.filename), indent=0)
         with open(source_file, 'r') as f:
             consumed = self._get_motionscene_content(f)
 
@@ -79,12 +86,20 @@ class MergeTag:
     def _get_generic_content(self, file):
         file.seek(0)
         for line in file.readlines():
-            if XML_FILE_HEADER in line:
-                continue
-            self._add_content_line(line)
+            if not self._should_ignore(line):
+                self._add_content_line(line)
 
-    def _add_content_line(self, content):
-        indent = ' ' * self.indent
+    def _should_ignore(self, line) -> bool:
+        for ignored in IGNORED_LINES:
+            if ignored in line:
+                return True
+        return False
+
+    def _add_content_line(self, content, indent=None):
+        if indent is None:
+            indent = self.indent
+
+        indent = ' ' * indent
         self.source_content = f'{self.source_content}{indent}{content}'
 
 
