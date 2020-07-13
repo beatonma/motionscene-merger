@@ -12,7 +12,8 @@ File injection tool to allow reuse of ConstraintSet definitions in multiple Moti
 
 ## Creating merge instructions
 In your `res/xml` directory:
-- Create a MotionScene file with content that you want to inject into some other file. The filename must start with `_merge_src_` e.g. `res/xml/_merge_src_my_injectable_motionscene.xml`
+- Create an XML file with any content you want to be able to inject into other files. This may be a full MotionScene, or some smaller fragment such as a KeyFrameSet or ConstraintSet. The filename must start with `_merge_src_` e.g. `res/xml/_merge_src_my_injectable_motionscene.xml`
+
 - Create a template for your parent MotionScene. Again, the filename must start with `_merge_src_` e.g. `res/xml/_merge_src_my_parent_motionscene.xml`
   - add a line in this file with `__merge__(source_filename)` e.g:
 
