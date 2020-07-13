@@ -10,15 +10,30 @@ File injection tool to allow reuse of ConstraintSet definitions in multiple Moti
     scenemerge .
 
 
-## Creating merge instructions:
-- In your resources/xml directory, create your MotionScene and ConstraintSet files, each prepended with `_merge_src_`.
- - e.g. `resources/xml/_merge_src_YOUR_MOTIONSCENE_FILENAME.xml`
- - e.g. `resources/xml/_merge_src_YOUR_CONSTRAINTSET_FILENAME.xml`
+## Creating merge instructions
+In your `res/xml` directory:
+- Create a MotionScene file with content that you want to inject into some other file. The filename must start with `_merge_src_` e.g. `res/xml/_merge_src_my_injectable_motionscene.xml`
+- Create a template for your parent MotionScene. Again, the filename must start with `_merge_src_` e.g. `res/xml/_merge_src_my_parent_motionscene.xml`
+  - add a line in this file with `__merge__(source_filename)` e.g:
 
-- In your MotionScene file, add a line with the signature `__merge__(_merge_src_YOUR_CONSTRAINTSET_FILENAME)`
-- The content from the specified ConstraintSet file will be copied in place into a new MotionScene file called `YOUR_MOTIONSCENE_FILENAME.xml`.
+    ```
+        <?xml version="1.0" encoding="utf-8"?>
+        <MotionScene
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:motion="http://schemas.android.com/apk/res-auto">
+    
+            <!-- Any other content here -->
+        
+            __merge__(merge_src_my_injectable_motionscene)
+    
+            <!-- Any other content here -->
+        
+        </MotionScene>
+    ```
 
-Please check the files in `test/example_root_dir/resources/xml` for example source files.
+Now when you run `scenemerge` the content from the MotionScene in `_merge_src_my_injectable_motionscene.xml` will be copied in place into a new MotionScene file called `my_parent_motionscene.xml`. The `<MotionScene...></MotionScene>` tags will not be copied - only the content between them.
+
+Please check the files in `test/example_root_dir/res/xml` for example source files.
 
 ## Android Studio File Watcher
 - Install the `File Watcher` plugin for Android Studio via `Settings -> Plugins`.
