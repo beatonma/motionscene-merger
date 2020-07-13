@@ -127,9 +127,9 @@ def _find_merge_tags(src_text: str) -> List[MergeTag]:
 
 
 def _get_xml_resource_filenames(rootdir: str) -> List[str]:
-    glb = f'{rootdir}/**/resources/xml/{MERGE_FILE_PREFIX}*.xml'.replace('//', '/')
+    glb = f'{rootdir}/**/res/xml/{MERGE_FILE_PREFIX}*.xml'.replace('//', '/')
     result = glob.glob(glb, recursive=True)
-    log.info(f'Found {len(result)} files in xml resource directory...')
+    log.info(f'Found {len(result)} files in xml resource directory (root={rootdir})...')
     return result
 
 
