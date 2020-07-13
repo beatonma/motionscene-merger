@@ -24,7 +24,7 @@ In your `res/xml` directory:
     
             <!-- Any other content here -->
         
-            __merge__(merge_src_my_injectable_motionscene)
+            __merge__(_merge_src_my_injectable_motionscene)
     
             <!-- Any other content here -->
         
