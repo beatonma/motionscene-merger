@@ -3,6 +3,6 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:motion="http://schemas.android.com/apk/res-auto">
 
-    __merge__(_merge_src_example_motion_scene_3)
+    <inject src="_example_motion_scene_3"/>
 
 </MotionScene>

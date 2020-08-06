@@ -21,8 +21,8 @@
     <ConstraintSet
         android:id="@+id/constraintset_one"/>
 
-    __merge__(_merge_src_example_constraintset)
+    <inject src="_example_constraintset"/>
 
-    __merge__(_merge_src_another_example_constraintset)
+    <inject src="_another_example_constraintset"/>
 
 </MotionScene>

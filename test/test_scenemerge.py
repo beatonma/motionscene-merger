@@ -7,10 +7,10 @@ import os
 from unittest import TestCase
 
 from motionscene_merger.scenemerge import (
-    MERGE_FILE_PREFIX,
+    SourceFile,
+    _build_sourcemap,
     _find_merge_tags,
-    _get_motionscene_files,
-    _get_xml_resource_filenames,
+    _get_source_filepaths,
     _merge_sources_for_directory,
 )
 
@@ -49,7 +49,7 @@ MOTION_SCENE = """<?xml version="1.0" encoding="utf-8"?>
         android:id="@+id/constraintset_one"
         motion:deriveConstraintsFrom="@+id/constraintset_one_default"/>
 
-    __merge__(constraintset_two)
+    <inject src="constraintset_two"/>
 
 </MotionScene>
 """
@@ -93,10 +93,17 @@ MERGED = """
 
 EXAMPLE_ROOT_DIR = os.path.join(os.path.dirname(__file__), 'example_root_dir')
 
+TEST_SOURCE_DIR = os.path.join(
+    EXAMPLE_ROOT_DIR,
+    _join_dirs('main/res/inject/')
+)
+
 TEST_XML_DIR = os.path.join(
     EXAMPLE_ROOT_DIR,
     _join_dirs('main/res/xml/')
 )
+
+TEST_TEMP_DIR = 'temp-scenemerge/'
 
 
 def _get_xml_path(filename: str):
@@ -106,17 +113,37 @@ def _get_xml_path(filename: str):
     )
 
 
+def _get_source_path(filename: str):
+    return os.path.join(
+        TEST_SOURCE_DIR,
+        filename
+    )
+
+
+def _get_temp_path(filename: str):
+    return os.path.join(
+        TEST_TEMP_DIR,
+        filename
+    )
+
+
+def _clean_generated_files():
+    for d in [TEST_TEMP_DIR, TEST_XML_DIR]:
+        if os.path.exists(d):
+            for f in os.listdir(d):
+                os.remove(os.path.join(d, f))
+            os.rmdir(d)
+
+
 class MergeTestCase(TestCase):
-    def _clean_generated_files(self):
-        for f in os.listdir(TEST_XML_DIR):
-            if f.endswith('.xml') and not f.startswith(MERGE_FILE_PREFIX) and 'example' in f:
-                os.remove(os.path.join(TEST_XML_DIR, f))
+    """"""
+
 
     def setUp(self) -> None:
-        self._clean_generated_files()
+        _clean_generated_files()
 
     def tearDown(self) -> None:
-        self._clean_generated_files()
+        _clean_generated_files()
 
     def test_merge_tag_regex(self):
         results = _find_merge_tags(MOTION_SCENE)
@@ -124,8 +151,8 @@ class MergeTestCase(TestCase):
 
         m = results[0]
         self.assertEqual(
-            m.filename,
-            'constraintset_two'
+            m.src,
+            'constraintset_two.xml'
         )
         self.assertEqual(
             m.indent,
@@ -134,63 +161,83 @@ class MergeTestCase(TestCase):
 
     def test_get_xml_resource_filenames(self):
         expected_files = [
-            '_merge_src_another_example_constraintset.xml',
-            '_merge_src_example_constraintset.xml',
-            '_merge_src_example_motion_scene.xml',
-            '_merge_src_example_motion_scene_2.xml',
-            '_merge_src_example_motion_scene_3.xml',
+            '_another_example_constraintset.xml',
+            '_example_constraintset.xml',
+            '_example_motion_scene.xml',
+            '_example_motion_scene_2.xml',
+            '_example_motion_scene_3.xml',
+            '_nested_1.xml',
+            '_nested_2.xml',
+            '_nested_3.xml',
         ]
-        results = _get_xml_resource_filenames(EXAMPLE_ROOT_DIR)
+        results = _get_source_filepaths(EXAMPLE_ROOT_DIR, 'main')
         actual_files = [os.path.basename(r) for r in results]
         self.assertListEqual(actual_files, expected_files)
-
-    def test_get_motionscene_files(self):
-        files = _get_xml_resource_filenames(EXAMPLE_ROOT_DIR)
-        motionscenes = _get_motionscene_files(files)
-
-        self.assertEqual(len(motionscenes), 3)
-        self.assertEqual(
-            os.path.basename(motionscenes[0].filepath),
-            '_merge_src_example_motion_scene.xml'
-        )
-
-    def test_motionscene_target_filename(self):
-        root = EXAMPLE_ROOT_DIR
-        files = _get_xml_resource_filenames(root)
-        motionscene_files = _get_motionscene_files(files)
-
-        self.assertEqual(
-            motionscene_files[0].get_target_file(),
-            _get_xml_path('example_motion_scene.xml')
-        )
 
     def test_complete(self):
         expected_output_path = _get_xml_path('example_motion_scene.xml')
         self.assertFalse(os.path.exists(expected_output_path))
-
-        _merge_sources_for_directory(EXAMPLE_ROOT_DIR)
-
+    #
+        _merge_sources_for_directory(EXAMPLE_ROOT_DIR, 'main')
+    #
         self.assertTrue(os.path.exists(expected_output_path))
-
+    #
         with open(expected_output_path, 'r') as f:
             content = f.readlines()
 
             for n, line in enumerate(content):
+                line = line.replace("\n", "")
                 log.info(f'{n}: {line}')
 
-            self.assertTrue("<!-- Start injected content from '_merge_src_example_constraintset' -->" in content[23])
-            self.assertTrue("<!-- End injected content from '_merge_src_example_constraintset' -->" in content[26])
+            self.assertTrue("<!-- Start injected content from '_example_constraintset.xml' -->" in content[29])
+            self.assertTrue("<!-- End injected content from '_example_constraintset.xml' -->" in content[32])
 
-            self.assertTrue("<!-- Start injected content from '_merge_src_another_example_constraintset' -->" in content[29])
-            self.assertTrue("<!-- End injected content from '_merge_src_another_example_constraintset' -->" in content[32])
+            self.assertTrue("<!-- Start injected content from '_another_example_constraintset.xml' -->" in content[35])
+            self.assertTrue("<!-- End injected content from '_another_example_constraintset.xml' -->" in content[38])
 
     def test_merge_motionscene_into_motionscene(self):
         expected_output_path = _get_xml_path('example_motion_scene_2.xml')
         self.assertFalse(os.path.exists(expected_output_path))
-        _merge_sources_for_directory(EXAMPLE_ROOT_DIR)
+        _merge_sources_for_directory(EXAMPLE_ROOT_DIR, 'main')
         self.assertTrue(os.path.exists(expected_output_path))
 
         with open(expected_output_path, 'r') as f:
             content = f.read()
             self.assertEqual(content.count('MotionScene'), 2)
             self.assertTrue('clickAction="toggle"' in content)
+
+    def test_parse_mergetag(self):
+        text = '  <inject src="_some_file"/>'
+        tags = _find_merge_tags(text)
+        self.assertEqual(tags[0].indent, 2)
+        self.assertEqual(tags[0].src, '_some_file.xml')
+
+    def test_sourcefile_resolve_injections(self):
+        sourcefile_one = SourceFile(_get_source_path('_example_constraintset.xml'))
+        sourcefile_two = SourceFile(_get_source_path('_example_motion_scene_2.xml'))
+        sourcefile_three = SourceFile(_get_source_path('_example_motion_scene_3.xml'))
+
+        sources = _build_sourcemap([
+            sourcefile_one,
+            sourcefile_two,
+            sourcefile_three,
+        ])
+        self.assertFalse(sources['_example_constraintset.xml'].resolved)
+        self.assertFalse(sources['_example_motion_scene_2.xml'].resolved)
+
+        sourcefile_one.resolve_injections(sources)
+        self.assertTrue(sourcefile_one.resolved)
+        self.assertTrue(sources['_example_constraintset.xml'].resolved)
+
+        sourcefile_two.resolve_injections(sources)
+        self.assertFalse(sourcefile_two.resolved)
+        self.assertFalse(sources['_example_motion_scene_2.xml'].resolved)
+
+    def test_transitive_injections(self):
+        expected_output_path = _get_xml_path('nested_1.xml')
+        _merge_sources_for_directory(EXAMPLE_ROOT_DIR, 'main', keep_transitive=True)
+        self.assertTrue(os.path.exists(expected_output_path))
+
+        with open(expected_output_path, 'r') as f:
+            content = f.read()
+            self.assertTrue('android:id="@+id/should_be_transitively_injected_to__nested_one"' in content)

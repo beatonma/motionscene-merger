@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='motionscene-merger',
-    version='1.0',
+    version='2.0',
     packages=['motionscene_merger'],
     url='https://beatonma.org',
     license='GNU General Public License v3.0',

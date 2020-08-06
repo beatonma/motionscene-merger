@@ -1,6 +1,6 @@
 ### scenemerge
 
-File injection tool to allow reuse of ConstraintSet definitions in multiple MotionScenes.
+File injection tool to allow reuse of ConstraintSet/KeyFrameSet/etc definitions in multiple MotionScenes.
 
 ## In your environment:
 
@@ -11,10 +11,10 @@ File injection tool to allow reuse of ConstraintSet definitions in multiple Moti
 
 
 ## Creating merge instructions
-In your `res/xml` directory:
-- Create a MotionScene file with content that you want to inject into some other file. The filename must start with `_merge_src_` e.g. `res/xml/_merge_src_my_injectable_motionscene.xml`
-- Create a template for your parent MotionScene. Again, the filename must start with `_merge_src_` e.g. `res/xml/_merge_src_my_parent_motionscene.xml`
-  - add a line in this file with `__merge__(source_filename)` e.g:
+Create a new directory called `inject` in your app resources directory e.g. `src/main/res/inject/`. In that directory:
+- Create a MotionScene file with content that you want to inject into some other file. The filename must start with `_` e.g. `res/inject/_my_injectable_motionscene.xml`
+- Create a template for your parent MotionScene. Again, the filename must start with `_` e.g. `res/inject/_my_parent_motionscene.xml`
+  - add a line in this file with `<inject src="source_filename"/>` e.g:
 
     ```
         <?xml version="1.0" encoding="utf-8"?>
@@ -24,30 +24,32 @@ In your `res/xml` directory:
     
             <!-- Any other content here -->
         
-            __merge__(merge_src_my_injectable_motionscene)
+            <inject src="my_injectable_motionscene"/>
     
             <!-- Any other content here -->
         
         </MotionScene>
     ```
 
-Now when you run `scenemerge` the content from the MotionScene in `_merge_src_my_injectable_motionscene.xml` will be copied in place into a new MotionScene file called `my_parent_motionscene.xml`. The `<MotionScene...></MotionScene>` tags will not be copied - only the content between them.
+Now when you run `scenemerge` the content from the MotionScene in `_my_injectable_motionscene.xml` will be copied in place into a new MotionScene file called `my_parent_motionscene.xml` in your `res/xml` directory. The `<MotionScene...></MotionScene>` tags will not be copied - only the content between them.
 
-Please check the files in `test/example_root_dir/res/xml` for example source files.
+Please check the files in `test/example_root_dir/res/inject` for example source files.
 
 ## Android Studio File Watcher
 - Install the `File Watcher` plugin for Android Studio via `Settings -> Plugins`.
 - Restart and open `Settings -> Tools -> File Watchers`, then click the `+` to create a new Watcher.
 - Set `File type` to XML.
-- Create a Scope with a pattern like `file[app]:src/**/res/xml/_merge_src_*.xml`
+- Create a Scope with a pattern like `file[app]:src/**/res/inject/_*.xml`
 - Set `Program` to `scenemerge` in your environment. e.g. env/Scripts/scenemerge
 - Set `Arguments` to `.`
 - Set `Working directory`to your app root.
 - `OK`
 
-Now `scenemerge` should run automatically whenever you edit a `_merge_src_YOUR_FILENAME.xml` file,
-creating/updating the merged MotionScene file `YOUR_FILENAME.xml`.
+Now `scenemerge` should run automatically whenever you edit a `res/inject/_YOUR_FILENAME.xml` file,
+creating/updating the merged MotionScene file `res/xml/YOUR_FILENAME.xml`.
 
 
 This project was written on a Sunday evening. It is unlikely to have any major updates but feel free to make pull requests or whatever.
 Hopefully MotionScene will someday have some kind built-in include/merge functionality and make this obsolete but this will have to do for now...
+
+
