@@ -190,11 +190,11 @@ class MergeTestCase(TestCase):
                 line = line.replace("\n", "")
                 log.info(f'{n}: {line}')
 
-            self.assertTrue("<!-- Start injected content from '_example_constraintset.xml' -->" in content[29])
-            self.assertTrue("<!-- End injected content from '_example_constraintset.xml' -->" in content[32])
+            self.assertTrue("<!-- Start injected content from '_example_constraintset.xml' -->" in content[28])
+            self.assertTrue("<!-- End injected content from '_example_constraintset.xml' -->" in content[31])
 
-            self.assertTrue("<!-- Start injected content from '_another_example_constraintset.xml' -->" in content[35])
-            self.assertTrue("<!-- End injected content from '_another_example_constraintset.xml' -->" in content[38])
+            self.assertTrue("<!-- Start injected content from '_another_example_constraintset.xml' -->" in content[34])
+            self.assertTrue("<!-- End injected content from '_another_example_constraintset.xml' -->" in content[37])
 
     def test_merge_motionscene_into_motionscene(self):
         expected_output_path = _get_xml_path('example_motion_scene_2.xml')
