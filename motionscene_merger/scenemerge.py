@@ -33,9 +33,8 @@ log.addHandler(logging.StreamHandler())
 
 MERGE_FILE_PREFIX = '_'
 
-SOURCE_DIR = 'res/inject/'
 TEMP_DIR = 'temp-scenemerge/'
-OUTPUT_DIR = 'res/xml/'
+DEFAULT_SOURCE_RES_DIR = 'inject'  # Name of the directory in /src/../res/ for storing source files
 
 # <inject arg1="" arg2="" />
 MERGE_TAG_PATTERN = re.compile(rf'^([ ]*)<inject (.*?)/>', flags=re.DOTALL | re.MULTILINE)
@@ -149,22 +148,29 @@ def _find_merge_tags(src_text: str) -> List[MergeTag]:
     return [_parse_mergetag(m) for m in matches]
 
 
-def _get_source_filepaths(rootdir: str, sourceset: str) -> List[str]:
-    glb = f'{rootdir}/**/{sourceset}/{SOURCE_DIR}/{MERGE_FILE_PREFIX}*.xml'.replace('//', '/')
+def _get_source_filepaths(rootdir: str, sourceset: str, res_dir: str) -> List[str]:
+    glb = f'{rootdir}/**/{sourceset}/res/{res_dir}/{MERGE_FILE_PREFIX}*.xml'.replace('//', '/')
     print(glb)
     result = glob.glob(glb, recursive=True)
     log.info(f'Found {len(result)} files in xml resource directory (root={rootdir})...')
     return result
 
 
-def _merge_sources_for_directory(root: str, sourceset: str, keep_transitive=False):
-    source_filepaths = _get_source_filepaths(root, sourceset)
+def _merge_sources_for_directory(
+        root: str,
+        sourceset: str = 'main',
+        res_dir: str = 'inject',
+        keep_transitive=False
+):
+    source_filepaths = _get_source_filepaths(root, sourceset, res_dir)
     working_filepaths = _clone_to_working_directory(source_filepaths)
     working_files = [SourceFile(x) for x in working_filepaths]
 
     sourceset_res_dir = glob.glob(f'{root}/**/{sourceset}/res/', recursive=True)[0]
     output_dir = os.path.join(sourceset_res_dir, 'xml')
     _merge_sources(working_files, output_dir, keep_transitive)
+
+    _clean_up()
 
 
 def _merge_sources(source_files: List['SourceFile'], output_dir: str, keep_transitive=False):
@@ -219,6 +225,7 @@ def _build_sourcemap(source_files: List['SourceFile']) -> Dict['str', 'SourceFil
 
 
 def _clone_to_working_directory(xml_files: List[str]) -> List[str]:
+    """Copy files to a temporary directory for processing."""
     if not os.path.exists(TEMP_DIR):
         os.makedirs(TEMP_DIR)
 
@@ -230,6 +237,13 @@ def _clone_to_working_directory(xml_files: List[str]) -> List[str]:
         working_filepaths.append(newpath)
 
     return working_filepaths
+
+
+def _clean_up():
+    if os.path.exists(TEMP_DIR):
+        for f in os.listdir(TEMP_DIR):
+            os.remove(os.path.join(TEMP_DIR, f))
+        os.rmdir(TEMP_DIR)
 
 
 def _parse_args():
@@ -245,6 +259,9 @@ def _parse_args():
         type=str,
         default='main',
         choices=['main', 'debug', 'test', 'androidTest'],
+        help=(
+            'Which Android sourceset to use.'
+        )
     )
 
     parser.add_argument(
@@ -258,12 +275,21 @@ def _parse_args():
         ),
     )
 
+    parser.add_argument(
+        '--resdir',
+        type=str,
+        default='inject',
+        help=(
+            'Name of the directory in which you store your source template files'
+        )
+    )
+
     return parser.parse_args()
 
 
 def main():
     _args = _parse_args()
-    _merge_sources_for_directory(_args.root, _args.source, _args.keep_transitive)
+    _merge_sources_for_directory(_args.root, _args.source, _args.resdir, _args.keep_transitive)
 
 
 if __name__ == '__main__':

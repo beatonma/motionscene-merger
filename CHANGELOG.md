@@ -1,3 +1,8 @@
+# 2.1
+- Add commandline option `--resdir` so you can choose to store your source files
+  in a different directory than the default `inject`.
+  This must still be a direct child of the `res` directory.
+
 # 2.0
 
 - Transitive injections are now supported - you can inject content from a file

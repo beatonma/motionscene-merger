@@ -170,7 +170,7 @@ class MergeTestCase(TestCase):
             '_nested_2.xml',
             '_nested_3.xml',
         ]
-        results = _get_source_filepaths(EXAMPLE_ROOT_DIR, 'main')
+        results = _get_source_filepaths(EXAMPLE_ROOT_DIR, sourceset='main', res_dir='inject')
         actual_files = [os.path.basename(r) for r in results]
         self.assertListEqual(actual_files, expected_files)
 
