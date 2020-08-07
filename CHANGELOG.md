@@ -1,3 +1,6 @@
+# 2.2
+- <inject ../> tags are now ignored if they are on a line starting with '<!--' (commented out)
+
 # 2.1
 - Add commandline option `--resdir` so you can choose to store your source files
   in a different directory than the default `inject`.

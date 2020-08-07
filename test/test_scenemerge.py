@@ -162,6 +162,7 @@ class MergeTestCase(TestCase):
     def test_get_xml_resource_filenames(self):
         expected_files = [
             '_another_example_constraintset.xml',
+            '_commented.xml',
             '_example_constraintset.xml',
             '_example_motion_scene.xml',
             '_example_motion_scene_2.xml',
@@ -235,9 +236,19 @@ class MergeTestCase(TestCase):
 
     def test_transitive_injections(self):
         expected_output_path = _get_xml_path('nested_1.xml')
-        _merge_sources_for_directory(EXAMPLE_ROOT_DIR, 'main', keep_transitive=True)
+        _merge_sources_for_directory(EXAMPLE_ROOT_DIR, 'main')
         self.assertTrue(os.path.exists(expected_output_path))
 
         with open(expected_output_path, 'r') as f:
             content = f.read()
             self.assertTrue('android:id="@+id/should_be_transitively_injected_to__nested_one"' in content)
+
+    def test_ignore_commented_injections(self):
+        expected_output_path = _get_xml_path('commented.xml')
+        _merge_sources_for_directory(EXAMPLE_ROOT_DIR, 'main')
+        self.assertTrue(os.path.exists(expected_output_path))
+
+        with open(expected_output_path, 'r') as f:
+            content = f.read()
+            self.assertTrue('<!--    <inject src="_example_constraintset"/>-->' in content)
+            self.assertFalse('android:id="@+id/constraintset_two"/>' in content)

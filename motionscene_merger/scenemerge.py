@@ -11,6 +11,11 @@ Requirements:
 `<inject src="_your_constraintset_filename"/>` where you want that content to appear.
 
 When you run the script, you should see the merged file `app/src/main/res/xml/your_motionscene_filename.xml`.
+
+Warning: This is a somewhat naive pattern-based find/replace - we do not actually parse the XML tree.
+         We recognise <MotionScene>...<MotionScene/> tags and <inject/> tags - everything else is just
+         treated as plain text, warts and all.
+
 """
 
 
@@ -37,7 +42,7 @@ TEMP_DIR = 'temp-scenemerge/'
 DEFAULT_SOURCE_RES_DIR = 'inject'  # Name of the directory in /src/../res/ for storing source files
 
 # <inject arg1="" arg2="" />
-MERGE_TAG_PATTERN = re.compile(rf'^([ ]*)<inject (.*?)/>', flags=re.DOTALL | re.MULTILINE)
+MERGE_TAG_PATTERN = re.compile(rf'^(<!--)?([ ]*)<inject (.*?)/>', flags=re.DOTALL | re.MULTILINE)
 MERGE_ARGS = [
     'src',
 ]
@@ -132,9 +137,12 @@ class MergeTag:
         return f'{self.tag}'
 
 
-def _parse_mergetag(match) -> 'MergeTag':
-    indent = len(match.group(1))
-    args_src = match.group(2)
+def _parse_mergetag(match) -> Optional['MergeTag']:
+    if match.group(1):
+        """Comment tag `<!--` found at start of line - tag should be ignored."""
+        return
+    indent = len(match.group(2))
+    args_src = match.group(3)
 
     args = {}
     for a in MERGE_ARGS:
@@ -145,7 +153,7 @@ def _parse_mergetag(match) -> 'MergeTag':
 
 def _find_merge_tags(src_text: str) -> List[MergeTag]:
     matches = [x for x in MERGE_TAG_PATTERN.finditer(src_text)]
-    return [_parse_mergetag(m) for m in matches]
+    return list(filter(None, [_parse_mergetag(m) for m in matches]))
 
 
 def _get_source_filepaths(rootdir: str, sourceset: str, res_dir: str) -> List[str]:
