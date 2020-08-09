@@ -1,3 +1,6 @@
+# 2.3
+- Content within `<merge>` and `<injected>` tags are now unwrapped (same behaviour as `<MotionScene>`).
+
 # 2.2
 - <inject ../> tags are now ignored if they are on a line starting with '<!--' (commented out)
 
