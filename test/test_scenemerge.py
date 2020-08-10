@@ -7,6 +7,7 @@ import os
 from unittest import TestCase
 
 from motionscene_merger.scenemerge import (
+    DEFAULT_SOURCE_RES_DIR,
     SourceFile,
     _build_sourcemap,
     _find_merge_tags,
@@ -15,6 +16,22 @@ from motionscene_merger.scenemerge import (
 )
 
 log = logging.getLogger(__name__)
+
+
+TEST_SOURCE_FILES = [
+    '_another_example_constraintset.xml',
+    '_commented.xml',
+    '_example_constraintset.xml',
+    '_example_motion_scene.xml',
+    '_example_motion_scene_2.xml',
+    '_example_motion_scene_3.xml',
+    '_nested_1.xml',
+    '_nested_2.xml',
+    '_nested_3.xml',
+]
+TEST_FILES = TEST_SOURCE_FILES + [
+    'some_other_file.xml',
+]
 
 
 def _join_dirs(dirpath: str, separator='/'):
@@ -93,15 +110,11 @@ MERGED = """
 
 EXAMPLE_ROOT_DIR = os.path.join(os.path.dirname(__file__), 'example_root_dir')
 
-TEST_SOURCE_DIR = os.path.join(
-    EXAMPLE_ROOT_DIR,
-    _join_dirs('main/res/inject/')
-)
-
 TEST_XML_DIR = os.path.join(
     EXAMPLE_ROOT_DIR,
     _join_dirs('main/res/xml/')
 )
+TEST_SOURCE_DIR = TEST_XML_DIR
 
 TEST_TEMP_DIR = 'temp-scenemerge/'
 
@@ -131,13 +144,14 @@ def _clean_generated_files():
     for d in [TEST_TEMP_DIR, TEST_XML_DIR]:
         if os.path.exists(d):
             for f in os.listdir(d):
-                os.remove(os.path.join(d, f))
-            os.rmdir(d)
+                if f not in TEST_FILES:
+                    os.remove(os.path.join(d, f))
+            if not os.listdir(d):
+                os.rmdir(d)
 
 
 class MergeTestCase(TestCase):
     """"""
-
 
     def setUp(self) -> None:
         _clean_generated_files()
@@ -160,18 +174,8 @@ class MergeTestCase(TestCase):
         )
 
     def test_get_xml_resource_filenames(self):
-        expected_files = [
-            '_another_example_constraintset.xml',
-            '_commented.xml',
-            '_example_constraintset.xml',
-            '_example_motion_scene.xml',
-            '_example_motion_scene_2.xml',
-            '_example_motion_scene_3.xml',
-            '_nested_1.xml',
-            '_nested_2.xml',
-            '_nested_3.xml',
-        ]
-        results = _get_source_filepaths(EXAMPLE_ROOT_DIR, sourceset='main', res_dir='inject')
+        expected_files = TEST_SOURCE_FILES
+        results = _get_source_filepaths(EXAMPLE_ROOT_DIR, sourceset='main', res_dir=DEFAULT_SOURCE_RES_DIR)
         actual_files = [os.path.basename(r) for r in results]
         self.assertListEqual(actual_files, expected_files)
 
@@ -246,6 +250,7 @@ class MergeTestCase(TestCase):
     def test_ignore_commented_injections(self):
         expected_output_path = _get_xml_path('commented.xml')
         _merge_sources_for_directory(EXAMPLE_ROOT_DIR, 'main')
+
         self.assertTrue(os.path.exists(expected_output_path))
 
         with open(expected_output_path, 'r') as f:

@@ -2,10 +2,10 @@
 File injection tool to allow reuse of ConstraintSet/KeyFrameSet/etc definitions in multiple MotionScenes.
 
 Requirements:
-- Create a directory in your project's `res` directory called `inject` e.g. `app/src/main/res/inject/`.
+- Create a directory in your project's `res` directory called `inject` e.g. `app/src/main/res/xml/`.
 - All files in this directory must be prepended with `MERGE_FILE_PREFIX` which is set to `_` by default.
- - e.g. res/inject/_your_motionscene_filename.xml
- - e.g. res/inject/_your_constraintset_filename.xml
+ - e.g. res/xml/_your_motionscene_filename.xml
+ - e.g. res/xml/_your_constraintset_filename.xml
 
 - To inject the content of one file into another, add a line with the signature
 `<inject src="_your_constraintset_filename"/>` where you want that content to appear.
@@ -39,7 +39,7 @@ log.addHandler(logging.StreamHandler())
 MERGE_FILE_PREFIX = '_'
 
 TEMP_DIR = 'temp-scenemerge/'
-DEFAULT_SOURCE_RES_DIR = 'inject'  # Name of the directory in /src/../res/ for storing source files
+DEFAULT_SOURCE_RES_DIR = 'xml'  # Name of the directory in /src/../res/ for storing source files
 
 # <inject arg1="" arg2="" />
 MERGE_TAG_PATTERN = re.compile(rf'^(<!--)?([ ]*)<inject (.*?)/>', flags=re.DOTALL | re.MULTILINE)
@@ -172,7 +172,7 @@ def _get_source_filepaths(rootdir: str, sourceset: str, res_dir: str) -> List[st
 def _merge_sources_for_directory(
         root: str,
         sourceset: str = 'main',
-        res_dir: str = 'inject',
+        res_dir: str = DEFAULT_SOURCE_RES_DIR,
         keep_transitive=False
 ):
     source_filepaths = _get_source_filepaths(root, sourceset, res_dir)
@@ -293,7 +293,7 @@ def _parse_args():
     parser.add_argument(
         '--resdir',
         type=str,
-        default='inject',
+        default='xml',
         help=(
             'Name of the directory in which you store your source template files'
         )

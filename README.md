@@ -2,18 +2,24 @@
 
 File injection tool to allow reuse of ConstraintSet/KeyFrameSet/etc definitions in multiple MotionScenes.
 
-## In your environment:
+## Installation
+
+    pip install motionscene-merger
+
+or 
 
     git clone https://github.com/motionscene-merger
-    python setup install
+    python setup.py install
+
+Then run with:
 
     scenemerge .
 
 
 ## Creating merge instructions
-Create a new directory called `inject` in your app resources directory e.g. `src/main/res/inject/`. In that directory:
-- Create a MotionScene file with content that you want to inject into some other file. The filename must start with `_` e.g. `res/inject/_my_injectable_motionscene.xml`
-- Create a template for your parent MotionScene. Again, the filename must start with `_` e.g. `res/inject/_my_parent_motionscene.xml`
+In your Android project `res/xml` directory:
+- Create a MotionScene file with content that you want to inject into some other file. The filename must start with `_` e.g. `res/xml/_my_injectable_motionscene.xml`
+- Create a template for your parent MotionScene. Again, the filename must start with `_` e.g. `res/xml/_my_parent_motionscene.xml`
   - add a line in this file with `<inject src="source_filename"/>` e.g:
 
     ```
@@ -39,13 +45,13 @@ Please check the files in `test/example_root_dir/res/inject` for example source 
 - Install the `File Watcher` plugin for Android Studio via `Settings -> Plugins`.
 - Restart and open `Settings -> Tools -> File Watchers`, then click the `+` to create a new Watcher.
 - Set `File type` to XML.
-- Create a Scope with a pattern like `file[app]:src/**/res/inject/_*.xml`
+- Create a Scope with a pattern like `file[app]:src/**/res/xml/_*.xml`
 - Set `Program` to `scenemerge` in your environment. e.g. env/Scripts/scenemerge
 - Set `Arguments` to `.`
 - Set `Working directory`to your app root.
 - `OK`
 
-Now `scenemerge` should run automatically whenever you edit a `res/inject/_YOUR_FILENAME.xml` file,
+Now `scenemerge` should run automatically whenever you edit a `res/xml/_YOUR_FILENAME.xml` file,
 creating/updating the merged MotionScene file `res/xml/YOUR_FILENAME.xml`.
 
 
