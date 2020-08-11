@@ -1,3 +1,10 @@
+# 2.4.1
+- Minor improvement to handling IGNORED_LINES content.
+
+# 2.4
+- Published to pypi: https://pypi.org/project/motionscene-merger/
+- Reverted default source directory to `res/xml` due to behaviour of Android Studio.
+
 # 2.3
 - Content within `<merge>` and `<injected>` tags are now unwrapped (same behaviour as `<MotionScene>`).
 

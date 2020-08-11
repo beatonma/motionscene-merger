@@ -5,7 +5,7 @@ with open('README.md', 'r') as f:
 
 setup(
     name='motionscene-merger',
-    version='2.4',
+    version='2.4.1',
     packages=['motionscene_merger'],
     url='https://github.com/beatonma/motionscene-merger',
     license='GNU General Public License v3.0',

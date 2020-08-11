@@ -332,8 +332,9 @@ def _get_generic_content(file, indent) -> str:
     file.seek(0)
     content = ''
     for line in file.readlines():
-        if not _should_ignore(line):
-            content = content + _get_indented_line(line, indent)
+        stripped = _stripped(line)
+        if stripped:
+            content = content + _get_indented_line(stripped, indent)
 
     return content
 
@@ -343,8 +344,14 @@ def _get_indented_line(content, indent):
     return f'{indent}{content}'
 
 
-def _should_ignore(line) -> bool:
+def _stripped(line):
     for ignored in IGNORED_LINES:
         if ignored in line:
-            return True
-    return False
+            content = line.replace(ignored, '').strip()
+            if content:
+                log.info(f'{line.strip()} -> {content}')
+                return content
+            else:
+                return None
+
+    return line
